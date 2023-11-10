@@ -1,6 +1,7 @@
 import { Web3Provider } from "./Web3Provider";
 import web3, { Web3 } from "web3";
 import { AvailableNetworks } from "./wallet-connect";
+// export const projectId = "78a4e3a1e2f3495dc2cbc51d7755783e";
 export const projectId = "78a4e3a1e2f3495dc2cbc51d7755783e";
 
 export const chainsById: Record<number, AvailableNetworks> = {
@@ -10,7 +11,8 @@ export const chainsById: Record<number, AvailableNetworks> = {
 };
 
 export const rpcs = {
-  AVA: `https://rpc.walletconnect.com/v1?chainId=eip155:43114&projectId=${projectId}`,
+  // AVA: `https://rpc.walletconnect.com/v1?chainId=eip155:43114&projectId=${projectId}`,
+  AVA: import.meta.env.VITE_ALCHEMY_RPC,
   FTM: undefined,
   BSC: undefined,
 };
@@ -29,7 +31,7 @@ export const newTokens: Record<string, string> = {
 
 // TODO
 export const migrationContracts: Record<string, `0x${string}` | null> = {
-  AVA: "0x43a8cab15D06d3a5fE5854D714C37E7E9246F170",
+  AVA: "0x43a8cab15D06d3a5fE5854D714C37E7E9246F170", //TODO
   FTM: "0x0000000000000000000000000000000000000000",
   BSC: "0x0000000000000000000000000000000000000000",
 };
