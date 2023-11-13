@@ -11,8 +11,8 @@ export const chainsById: Record<number, AvailableNetworks> = {
 };
 
 export const rpcs = {
-  // AVA: `https://rpc.walletconnect.com/v1?chainId=eip155:43114&projectId=${projectId}`,
-  AVA: import.meta.env.VITE_ALCHEMY_RPC,
+  AVA: `https://rpc.walletconnect.com/v1?chainId=eip155:43114&projectId=${projectId}`,
+  // AVA: import.meta.env.VITE_ALCHEMY_RPC,
   FTM: undefined,
   BSC: undefined,
 };

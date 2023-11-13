@@ -1,7 +1,12 @@
 import "./App.css";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useAccount, useNetwork } from "wagmi";
-import { useAuthorize, useBalances, useMigrate } from "./lib/MigrationProvider";
+import {
+  useAuthorize,
+  useBalances,
+  useIsApproved,
+  useMigrate,
+} from "./lib/MigrationProvider";
 import {
   Box,
   Button,
@@ -12,7 +17,6 @@ import {
   Skeleton,
   Spacer,
   Stat,
-  StatGroup,
   StatHelpText,
   StatLabel,
   StatNumber,
@@ -20,7 +24,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
-import { CheckIcon, InfoIcon } from "@chakra-ui/icons";
 import BN from "bignumber.js";
 
 function AddressWidget() {
@@ -32,10 +35,10 @@ function Migrate() {
   const { data } = useBalances();
   const migrate = useMigrate(network.chain?.name, data?.old);
   const authorize = useAuthorize(network.chain?.name);
-  // const { data: isApproved } = useIsApproved();
+  const { data: isApproved } = useIsApproved();
   const { data: balances } = useBalances();
 
-  const isApproved = false;
+  // const isApproved = false;
 
   return (
     <VStack align={"stretch"}>

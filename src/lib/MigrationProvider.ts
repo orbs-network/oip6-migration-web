@@ -16,36 +16,10 @@ import {
 } from "wagmi";
 import { useDebounce } from "usehooks-ts";
 import { AvailableNetworks } from "./wallet-connect";
-import { useBalances } from "../App";
 import { useQuery } from "@tanstack/react-query";
 
 function convertRawToDecimal(rawBalance: string, decimals: number) {
   return new BN(rawBalance).div(Math.pow(10, decimals)).toString();
-}
-
-class MigrationProvider {
-  async getBalances(account: string, network: AvailableNetworks) {
-    const web3Provider = web3Providers[network];
-
-    const balances = await web3Provider.balancesOf(account, [
-      oldTokens[network],
-      newTokens[network],
-    ]);
-
-    const decimalsOld = await web3Provider.decimals(oldTokens[network]);
-    const decimalsNew = await web3Provider.decimals(newTokens[network]);
-
-    if (decimalsOld !== decimalsNew) throw new Error("Decimals don't match");
-
-    return {
-      old: balances[oldTokens[network]],
-      new: balances[newTokens[network]],
-      oldUI: convertRawToDecimal(balances[oldTokens[network]], decimalsOld),
-      newUI: convertRawToDecimal(balances[newTokens[network]], decimalsNew),
-      oldContract: oldTokens[network],
-      newContract: newTokens[network],
-    };
-  }
 }
 
 export function useIsApproved() {
@@ -57,20 +31,20 @@ export function useIsApproved() {
   return useQuery({
     queryKey: ["isApproved", account.address, network.chain?.name],
     enabled: !!account.address && !!network.chain?.id && !!balances,
-    refetchInterval: (isApproved) => (isApproved ? 0 : 3000),
+    refetchInterval: (isApproved) => (isApproved ? 0 : 8000),
     queryFn: async () => {
-      const web3Provider =
-        web3Providers[network.chain!.name as AvailableNetworks];
-      const erc20 = web3Provider.getContract(
+      const _network = chainsById[network.chain!.id];
+      const web3Provider = web3Providers[_network];
+      const oldTokenContract = web3Provider.getContract(
         erc20ABI,
-        oldTokens[network.chain!.name]
+        oldTokens[_network]
       );
 
       const allowance = new BN(
-        await erc20.methods
+        await oldTokenContract.methods
           .allowance(
             account.address as string,
-            migrationContracts[network.chain!.name] as string
+            migrationContracts[_network] as string
           )
           .call()
       );
@@ -98,8 +72,6 @@ export function useAuthorize(network?: AvailableNetworks) {
 }
 
 export function useMigrate(network?: AvailableNetworks, amount?: number) {
-  // const web3Provider = web3Providers[network];
-
   const debouncedAmount = useDebounce(amount, 500);
 
   const { config } = usePrepareContractWrite({
@@ -115,19 +87,51 @@ export function useMigrate(network?: AvailableNetworks, amount?: number) {
   return write;
 }
 
-export function useBalances() {
-  const account = useAccount();
+function useDecimals() {
   const network = useNetwork();
+
   return useQuery({
-    queryKey: ["balances", account.address, network.chain?.id],
-    enabled: !!account.address && !!network.chain?.id,
-    refetchInterval: 3000,
-    queryFn: async () =>
-      migrationProvider.getBalances(
-        account.address!,
-        chainsById[network.chain!.id]
-      ),
+    queryKey: ["decimals", network.chain?.name],
+    enabled: !!network.chain?.id,
+    queryFn: async () => {
+      const _network = chainsById[network.chain!.id];
+      const web3Provider = web3Providers[_network];
+
+      const decimalsOld = await web3Provider.decimals(oldTokens[_network]);
+      const decimalsNew = await web3Provider.decimals(newTokens[_network]);
+
+      if (decimalsOld !== decimalsNew) throw new Error("Decimals don't match");
+
+      return decimalsOld;
+    },
   });
 }
 
-export const migrationProvider = new MigrationProvider();
+export function useBalances() {
+  const account = useAccount();
+  const network = useNetwork();
+  const { data: decimals } = useDecimals();
+  return useQuery({
+    queryKey: ["balances", account.address, network.chain?.id],
+    enabled: !!account.address && !!network.chain?.id && decimals !== undefined,
+    refetchInterval: 15000,
+    queryFn: async () => {
+      const _network = chainsById[network.chain!.id];
+      const web3Provider = web3Providers[_network];
+
+      const balances = await web3Provider.balancesOf(account.address!, [
+        oldTokens[_network],
+        newTokens[_network],
+      ]);
+
+      return {
+        old: balances[oldTokens[_network]],
+        new: balances[newTokens[_network]],
+        oldUI: convertRawToDecimal(balances[oldTokens[_network]], decimals!),
+        newUI: convertRawToDecimal(balances[newTokens[_network]], decimals!),
+        oldContract: oldTokens[_network],
+        newContract: newTokens[_network],
+      };
+    },
+  });
+}
