@@ -22,9 +22,13 @@ import {
   StatNumber,
   Tooltip,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
 import BN from "bignumber.js";
+import { chainsById } from "./lib/config";
+import { useEffect } from "react";
+import { CheckCircleIcon } from "@chakra-ui/icons";
 
 function AddressWidget() {
   return <w3m-account-button />;
@@ -33,12 +37,31 @@ function AddressWidget() {
 function Migrate() {
   const network = useNetwork();
   const { data } = useBalances();
-  const migrate = useMigrate(network.chain?.name, data?.old);
-  const authorize = useAuthorize(network.chain?.name);
+  const toast = useToast();
+
+  const { write: authorize, error: errorAuthorize } = useAuthorize(
+    chainsById[network.chain?.id],
+    data?.old
+  );
   const { data: isApproved } = useIsApproved();
   const { data: balances } = useBalances();
+  const migrate = useMigrate(
+    chainsById[network.chain?.id],
+    data?.old,
+    isApproved
+  );
 
-  // const isApproved = false;
+  useEffect(() => {
+    if (errorAuthorize) {
+      toast({
+        title: errorAuthorize.name,
+        description: errorAuthorize.message,
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+    }
+  }, [errorAuthorize, toast]);
 
   return (
     <VStack align={"stretch"}>
@@ -48,6 +71,7 @@ function Migrate() {
         }
         sx={{ py: 6 }}
         bgColor={isApproved ? "gray.500" : "blue.500"}
+        leftIcon={isApproved ? <CheckCircleIcon /> : undefined}
         onClick={() => {
           authorize?.();
         }}

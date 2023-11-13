@@ -54,32 +54,34 @@ export function useIsApproved() {
   });
 }
 
-export function useAuthorize(network?: AvailableNetworks) {
+export function useAuthorize(network: AvailableNetworks, amount: BN) {
   const { config } = usePrepareContractWrite({
-    address: (network ? oldTokens[network] : "0x0") as `0x${string}`,
+    address: oldTokens[network] as `0x${string}`,
     abi: erc20ABI,
     functionName: "approve",
     args: [
-      (network ? migrationContracts[network] : "0x0") as `0x${string}`,
-      BigInt(100),
+      migrationContracts[network] as `0x${string}`,
+      BigInt(amount?.toString() ?? 0),
     ],
-    enabled: !!network,
+    enabled: !!network && !!amount,
   });
 
-  const { write } = useContractWrite(config);
-
-  return write;
+  return useContractWrite(config);
 }
 
-export function useMigrate(network?: AvailableNetworks, amount?: number) {
+export function useMigrate(
+  network?: AvailableNetworks,
+  amount?: number,
+  isApproved?: boolean
+) {
   const debouncedAmount = useDebounce(amount, 500);
 
   const { config } = usePrepareContractWrite({
-    address: migrationContracts[network ?? ""] ?? `0x${"0".repeat(40)}`,
+    address: migrationContracts[network!]!,
     abi: oip6migration.abi,
     functionName: "swap",
     args: [debouncedAmount],
-    enabled: !!debouncedAmount && !!network,
+    enabled: !!debouncedAmount && !!network && !!isApproved,
   });
 
   const { write } = useContractWrite(config);
