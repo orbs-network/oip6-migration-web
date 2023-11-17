@@ -10,7 +10,6 @@ import theme from "./theme.ts";
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  // <React.StrictMode>
   <WagmiConfig config={wagmiConfig}>
     <QueryClientProvider client={queryClient}>
       <ChakraBaseProvider theme={theme}>
@@ -19,5 +18,4 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       </ChakraBaseProvider>
     </QueryClientProvider>
   </WagmiConfig>
-  // </React.StrictMode>
 );
