@@ -44,7 +44,6 @@ export const web3Providers: Record<AvailableNetworks, Web3Provider> = {
 
 export function useConfig() {
   const _network = useNetwork();
-
   if (!_network.chain) return null;
 
   const network = chainsById[_network.chain!.id];
