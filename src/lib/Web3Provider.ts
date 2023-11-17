@@ -1,18 +1,15 @@
 import BN from "bignumber.js";
-// import { setWeb3Instance } from "@defi.org/web3-candies";
 
 import { Multicall, ContractCallResults } from "ethereum-multicall";
 import { erc20ABI } from "wagmi";
 
-// import { _TypedDataEncoder } from "@ethersproject/hash";
-
 import Web3, { Contract, ContractAbi } from "web3";
+import { Multicaller } from "./multicaller";
 
 export class Web3Provider {
   multicall: Multicall;
 
   constructor(public web3: Web3) {
-    // setWeb3Instance(this.web3);
     this.multicall = new Multicall({ web3Instance: web3, tryAggregate: true });
   }
 
@@ -21,6 +18,69 @@ export class Web3Provider {
   async decimals(token: string) {
     const contract = this.getContract(erc20ABI, token);
     return Number(await contract.methods.decimals().call());
+  }
+
+  async tokenInfo(
+    oldToken: string,
+    newToken: string,
+    account: string,
+    migrationContract: string
+  ): Promise<{
+    old: {
+      decimals: number;
+      name: string;
+      symbol: string;
+      balanceOf: string;
+      allowance: string;
+      address: string;
+      isApproved: boolean;
+      balanceOfUI: string;
+    };
+    new: {
+      decimals: number;
+      name: string;
+      symbol: string;
+      balanceOf: string;
+      address: string;
+      balanceOfUI: string;
+    };
+  }> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results: any = await new Multicaller(this.web3)
+      .addCall(oldToken, erc20ABI, {
+        decimals: [],
+        name: [],
+        symbol: [],
+        balanceOf: [account],
+        allowance: [account, migrationContract],
+      })
+      .addCall(newToken, erc20ABI, {
+        decimals: [],
+        name: [],
+        symbol: [],
+        balanceOf: [account],
+      })
+      .execute();
+
+    return {
+      old: {
+        ...results[oldToken],
+        address: oldToken,
+        balanceOfUI: new BN(results[oldToken].balanceOf)
+          .div(new BN(10).pow(results[oldToken].decimals))
+          .toString(),
+        isApproved:
+          new BN(results[oldToken].balanceOf).gt(0) &&
+          new BN(results[oldToken].allowance).gte(results[oldToken].balanceOf),
+      },
+      new: {
+        ...results[newToken],
+        address: newToken,
+        balanceOfUI: new BN(results[newToken].balanceOf)
+          .div(new BN(10).pow(results[newToken].decimals))
+          .toString(),
+      },
+    };
   }
 
   getContract<T extends ContractAbi>(abi: T, address: string) {

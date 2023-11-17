@@ -1,6 +1,6 @@
 import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/react";
 import { bsc, avalanche, fantom } from "viem/chains";
-import { projectId, rpcs } from "./config";
+import { projectId, rpcs, chainsById } from "./config";
 import { configureChains } from "wagmi";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 
@@ -14,14 +14,12 @@ const metadata = {
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
 
-console.log(rpcs.AVA);
-
 const { chains } = configureChains(
-  [avalanche],
+  [avalanche, fantom, bsc],
   [
     jsonRpcProvider({
       rpc: (chain) => ({
-        http: rpcs.AVA!,
+        http: rpcs[chainsById[chain.id]],
       }),
     }),
   ]
