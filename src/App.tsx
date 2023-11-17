@@ -4,6 +4,10 @@ import { useAccount, useNetwork } from "wagmi";
 import { useMigrate } from "./lib/useMigrate";
 import { useAuthorize } from "./lib/useAuthorize";
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
   Box,
   Button,
   Card,
@@ -178,6 +182,15 @@ function Balances() {
               {data?.old.address}
             </Text>
           </Tooltip>
+          {data?.old.balanceOf === "0" && (
+            <>
+              <Spacer h={2} />
+              <Alert status="error">
+                <AlertIcon />
+                <AlertTitle>No tokens to migrate</AlertTitle>
+              </Alert>
+            </>
+          )}
         </CardBody>
       </Card>
       <Card bgColor={"green.800"}>
