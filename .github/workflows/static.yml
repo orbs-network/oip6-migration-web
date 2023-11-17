@@ -39,6 +39,11 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
+        env:
+          VITE_WALLETCONNECT_PROJECT_ID: ${{ vars.VITE_WALLETCONNECT_PROJECT_ID }}
+          VITE_ALCHEMY_RPC_AVA: ${{ vars.VITE_ALCHEMY_RPC_AVA }}
+          VITE_ALCHEMY_RPC_FTM: ${{ vars.VITE_ALCHEMY_RPC_FTM }}
+          VITE_ALCHEMY_RPC_BSC: ${{ vars.VITE_ALCHEMY_RPC_BSC }}
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
