@@ -5,7 +5,6 @@ import { useMigrate } from "./lib/useMigrate";
 import { useAuthorize } from "./lib/useAuthorize";
 import {
   Alert,
-  AlertDescription,
   AlertIcon,
   AlertTitle,
   Box,
