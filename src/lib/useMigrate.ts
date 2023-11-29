@@ -3,12 +3,18 @@ import { useTokenInfo } from "./useTokenInfo";
 import { useConfig } from "./config";
 import { useTransaction } from "./useTransaction";
 import { useDebounce } from "usehooks-ts";
+import { useAtom } from "jotai";
+import { amountToMigrateAtom } from "../App";
+import { fromUI } from "./utils/fromUI";
 
 export function useMigrate() {
   const config = useConfig();
   const { data: tokenInfo } = useTokenInfo();
-
-  const debouncedAmount = useDebounce(tokenInfo?.old.balanceOf, 500);
+  const [amount] = useAtom(amountToMigrateAtom);
+  const debouncedAmount = useDebounce(
+    fromUI(amount ?? 0, tokenInfo?.old.decimals ?? 0),
+    500
+  );
 
   return useTransaction({
     address: config?.migrationContract,

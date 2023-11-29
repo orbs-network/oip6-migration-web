@@ -35,7 +35,6 @@ export class Web3Provider {
       balanceOf: string;
       allowance: string;
       address: string;
-      isApproved: boolean;
       balanceOfUI: string;
       balanceMigrationContract: string;
       balanceMigrationContractUI: string;
@@ -83,9 +82,6 @@ export class Web3Provider {
         ...results[0],
         address: oldToken,
         balanceOfUI: toUI(results[0].balanceOf, results[0].decimals),
-        isApproved:
-          new BN(results[0].balanceOf).gt(0) &&
-          new BN(results[0].allowance).gte(results[0].balanceOf),
 
         balanceMigrationContract: results[3].balanceOf,
         balanceMigrationContractUI: toUI(

@@ -18,6 +18,46 @@ import { useAdminTransfer } from "../lib/useAdminTransfer";
 import { useAdminRecover } from "../lib/useAdminRecover";
 import React from "react";
 import { fromUI } from "../lib/utils/fromUI";
+import { useAdminResetApproval } from "../lib/useAdminResetApproval";
+
+function ResetApproval() {
+  const { data: tokenInfo } = useTokenInfo();
+
+  const {
+    write: resetApproval,
+    errorPrepare,
+    errorTxn,
+    isLoading,
+    isSuccess,
+  } = useAdminResetApproval();
+
+  useErrorToast(errorTxn);
+  useSuccessToast(isSuccess);
+
+  if (!tokenInfo) return null;
+
+  return (
+    <HStack>
+      <VStack>
+        <Text color={"whiteAlpha.500"}>
+          Reset approval (current:{" "}
+          {toUI(tokenInfo?.old.allowance, tokenInfo.old.decimals)})
+        </Text>
+      </VStack>
+      <Tooltip label={errorPrepare?.message}>
+        <Button
+          onClick={() => {
+            resetApproval?.();
+          }}
+          isLoading={isLoading}
+          isDisabled={!resetApproval}
+        >
+          Reset
+        </Button>
+      </Tooltip>
+    </HStack>
+  );
+}
 
 function TransferFromMigrationContract() {
   const { data: tokenInfo } = useTokenInfo();
@@ -135,6 +175,8 @@ export function AdminPanel() {
         <TransferToMigrationContract />
         <Spacer h={2} />
         <TransferFromMigrationContract />
+        <Spacer h={2} />
+        <ResetApproval />
       </CardBody>
     </Card>
   );

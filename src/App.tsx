@@ -9,12 +9,23 @@ import {
   AlertTitle,
   Box,
   Button,
-  ButtonProps,
   Card,
   CardBody,
+  FormControl,
+  FormLabel,
   HStack,
   Heading,
-  Select,
+  Input,
+  InputGroup,
+  InputRightElement,
+  Link,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Skeleton,
   Spacer,
   Stat,
@@ -23,6 +34,7 @@ import {
   StatNumber,
   Tooltip,
   VStack,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
 import BN from "bignumber.js";
@@ -32,6 +44,12 @@ import { useTokenInfo } from "./lib/useTokenInfo";
 import { AdminPanel } from "./components/AdminPanel";
 import { useErrorToast } from "./hooks/useErrorToast";
 import { useSuccessToast } from "./hooks/useSuccessToast";
+import { atom, useAtom } from "jotai";
+import { useEffect, useState } from "react";
+import React from "react";
+import { fromUI } from "./lib/utils/fromUI";
+
+export const amountToMigrateAtom = atom<string | null>(null);
 
 function AddressWidget() {
   return <w3m-account-button />;
@@ -89,6 +107,7 @@ function Authorize() {
   const { data: tokenInfo } = useTokenInfo();
   useErrorToast(errorTxn);
   useSuccessToast(isSuccess);
+  const [amount] = useAtom(amountToMigrateAtom);
 
   let bgColor;
 
@@ -100,7 +119,9 @@ function Authorize() {
     bgColor = "blue.500";
   }
 
-  const oldBalance = new BN(tokenInfo?.old.balanceOf ?? 0);
+  const oldBalance = new BN(
+    fromUI(amount ?? "0", tokenInfo?.old.decimals ?? 1)
+  );
 
   return (
     <Tooltip
@@ -145,8 +166,81 @@ export function TokenAmount(params: {
   );
 }
 
+function EditAmountPopup() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const [amount, setAmount] = useAtom(amountToMigrateAtom);
+  const [value, setValue] = useState(amount ?? "1");
+  const initialRef = React.useRef(null);
+  const { data } = useTokenInfo();
+  const { network } = useConnectionStatus();
+
+  useEffect(() => {
+    setAmount(null);
+  }, [network, setAmount]);
+
+  useEffect(() => {
+    if (amount === null && data?.old.balanceOfUI) {
+      setAmount(data?.old.balanceOfUI);
+      setValue(data?.old.balanceOfUI);
+    }
+  }, [data?.old.balanceOfUI, amount, setAmount]);
+
+  return (
+    <>
+      <Button onClick={onOpen}>SET AMOUNT</Button>
+      <Modal initialFocusRef={initialRef} isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>SET AMOUNT</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <FormControl mt={4}>
+              <FormLabel>Amount</FormLabel>
+              <InputGroup>
+                <Input
+                  type="number"
+                  onChange={(e) => setValue(e.target.value)}
+                  ref={initialRef}
+                  value={value}
+                  max={data?.old.balanceOfUI}
+                />
+                <InputRightElement>
+                  <Button
+                    onClick={() => {
+                      setValue(data?.old.balanceOfUI ?? "0");
+                    }}
+                    size={"sm"}
+                  >
+                    MAX
+                  </Button>
+                </InputRightElement>
+              </InputGroup>
+            </FormControl>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              onClick={() => {
+                setAmount(value);
+                onClose();
+              }}
+              colorScheme="blue"
+              mr={3}
+            >
+              Save
+            </Button>
+            <Button onClick={onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}
+
 function Balances() {
   const { data } = useTokenInfo();
+  const [amount] = useAtom(amountToMigrateAtom);
 
   return (
     <VStack align={"stretch"}>
@@ -154,9 +248,10 @@ function Balances() {
         <CardBody>
           <TokenAmount
             title={"OLD TOKEN"}
-            balance={data?.old.balanceOfUI}
+            balance={amount ?? ""}
             symbol={data?.old.symbol}
           />
+
           <Tooltip label={data?.old.address}>
             <Text
               fontFamily={"monospace"}
@@ -176,6 +271,8 @@ function Balances() {
               </Alert>
             </>
           )}
+          <Spacer h={4} />
+          <EditAmountPopup />
         </CardBody>
       </Card>
       <Card bgColor={"green.800"}>
@@ -253,7 +350,17 @@ function App() {
           <CardBody>
             <Text>
               This tool lets you safely migrate defunct multichain ORBS to the
-              new ORBS token, as decided in OIP-6.
+              new ORBS token, as decided in{" "}
+              <Link
+                isExternal
+                color="blue.400"
+                fontWeight={"bold"}
+                href={
+                  "https://www.orbs.com/OIP-6-Relief-for-Multichain-bridged-ORBS-Token-Holders/"
+                }
+              >
+                OIP-6
+              </Link>
             </Text>
           </CardBody>
         </Card>
