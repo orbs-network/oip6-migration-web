@@ -14,7 +14,7 @@ export class Multicaller {
 
   addCall(address: string, abi: any, functions: Record<string, string[]>) {
     this.pendingCalls.push({
-      reference: address,
+      reference: this.pendingCalls.length,
       contractAddress: address,
       abi: abi,
       calls: Object.entries(functions).map(
@@ -43,23 +43,18 @@ export class Multicaller {
 
     const resp = await this.multicall.call(this.pendingCalls);
 
-    return Object.fromEntries(
-      Object.entries(resp?.results ?? {}).map(([token, result]) => {
-        return [
-          token,
-          Object.fromEntries(
-            result.callsReturnContext.map((c) => {
-              let value = c.returnValues[0];
+    return Object.values(resp?.results ?? {}).map((result) =>
+      Object.fromEntries(
+        result.callsReturnContext.map((c) => {
+          let value = c.returnValues[0];
 
-              if (value?.hex) {
-                value = BN(value.hex).toString();
-              }
+          if (value?.hex) {
+            value = BN(value.hex).toString();
+          }
 
-              return [c.methodName, value];
-            })
-          ),
-        ];
-      })
+          return [c.methodName, value];
+        })
+      )
     );
   }
 }

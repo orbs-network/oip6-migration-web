@@ -2,9 +2,11 @@ import BN from "bignumber.js";
 
 import { Multicall, ContractCallResults } from "ethereum-multicall";
 import { erc20ABI } from "wagmi";
+import migrationAbi from "./oip6migration.abi.json";
 
 import Web3, { Contract, ContractAbi } from "web3";
 import { Multicaller } from "./multicaller";
+import { toUI } from "./utils/toUI";
 
 export class Web3Provider {
   multicall: Multicall;
@@ -35,6 +37,8 @@ export class Web3Provider {
       address: string;
       isApproved: boolean;
       balanceOfUI: string;
+      balanceMigrationContract: string;
+      balanceMigrationContractUI: string;
     };
     new: {
       decimals: number;
@@ -43,10 +47,13 @@ export class Web3Provider {
       balanceOf: string;
       address: string;
       balanceOfUI: string;
+      balanceMigrationContract: string;
+      balanceMigrationContractUI: string;
     };
+    migrationContract: { owner: string };
   }> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const results: any = await new Multicaller(this.web3)
+    const results: any[] = await new Multicaller(this.web3)
       .addCall(oldToken, erc20ABI, {
         decimals: [],
         name: [],
@@ -60,25 +67,44 @@ export class Web3Provider {
         symbol: [],
         balanceOf: [account],
       })
+      .addCall(migrationContract, migrationAbi.abi, {
+        owner: [],
+      })
+      .addCall(oldToken, erc20ABI, {
+        balanceOf: [migrationContract],
+      })
+      .addCall(newToken, erc20ABI, {
+        balanceOf: [migrationContract],
+      })
       .execute();
 
     return {
       old: {
-        ...results[oldToken],
+        ...results[0],
         address: oldToken,
-        balanceOfUI: new BN(results[oldToken].balanceOf)
-          .div(new BN(10).pow(results[oldToken].decimals))
-          .toString(),
+        balanceOfUI: toUI(results[0].balanceOf, results[0].decimals),
         isApproved:
-          new BN(results[oldToken].balanceOf).gt(0) &&
-          new BN(results[oldToken].allowance).gte(results[oldToken].balanceOf),
+          new BN(results[0].balanceOf).gt(0) &&
+          new BN(results[0].allowance).gte(results[0].balanceOf),
+
+        balanceMigrationContract: results[3].balanceOf,
+        balanceMigrationContractUI: toUI(
+          results[3].balanceOf,
+          results[0].decimals
+        ),
       },
       new: {
-        ...results[newToken],
+        ...results[1],
         address: newToken,
-        balanceOfUI: new BN(results[newToken].balanceOf)
-          .div(new BN(10).pow(results[newToken].decimals))
-          .toString(),
+        balanceOfUI: toUI(results[1].balanceOf, results[1].decimals),
+        balanceMigrationContract: results[4].balanceOf,
+        balanceMigrationContractUI: toUI(
+          results[4].balanceOf,
+          results[1].decimals
+        ),
+      },
+      migrationContract: {
+        ...results[2],
       },
     };
   }

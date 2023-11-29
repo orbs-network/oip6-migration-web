@@ -6,10 +6,12 @@ import React from "react";
 export function useTransaction(txn: any) {
   const [errorPrepare, setError] = React.useState<Error | null>(null);
 
-  const { config: _config } = usePrepareContractWrite({
-    ...txn,
-    onError: setError,
-  });
+  const { config: _config, isLoading: isPrepareLoading } =
+    usePrepareContractWrite({
+      ...txn,
+      onError: setError,
+      onSuccess: () => setError(null),
+    });
 
   const {
     write,
@@ -22,7 +24,7 @@ export function useTransaction(txn: any) {
     write,
     errorTxn,
     errorPrepare,
-    isLoading,
+    isLoading: isLoading || isPrepareLoading,
     isSuccess,
   };
 }

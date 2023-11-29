@@ -9,10 +9,12 @@ import {
   AlertTitle,
   Box,
   Button,
+  ButtonProps,
   Card,
   CardBody,
   HStack,
   Heading,
+  Select,
   Skeleton,
   Spacer,
   Stat,
@@ -21,47 +23,18 @@ import {
   StatNumber,
   Tooltip,
   VStack,
-  useToast,
 } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
 import BN from "bignumber.js";
 import { chainsById } from "./lib/config";
-import { useEffect } from "react";
 import { CheckCircleIcon, WarningIcon } from "@chakra-ui/icons";
 import { useTokenInfo } from "./lib/useTokenInfo";
+import { AdminPanel } from "./components/AdminPanel";
+import { useErrorToast } from "./hooks/useErrorToast";
+import { useSuccessToast } from "./hooks/useSuccessToast";
 
 function AddressWidget() {
   return <w3m-account-button />;
-}
-
-function useSuccessToast(show: boolean) {
-  const toast = useToast();
-
-  useEffect(() => {
-    show &&
-      toast({
-        title: "Transaction Issued",
-        // description: ,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-  }, [show, toast]);
-}
-
-function useErrorToast(error: Error | null) {
-  const toast = useToast();
-
-  useEffect(() => {
-    error &&
-      toast({
-        title: error.name,
-        description: error.message,
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-  }, [error, toast]);
 }
 
 function Migrate() {
@@ -153,6 +126,25 @@ function Authorize() {
   );
 }
 
+export function TokenAmount(params: {
+  title: string;
+  balance?: string;
+  symbol?: string;
+}) {
+  const { title, balance, symbol } = params;
+  return (
+    <Stat>
+      <StatLabel color={"whiteAlpha.500"}>{title}</StatLabel>
+      <HStack align={"baseline"} gap={1}>
+        <StatNumber fontSize={"1.8rem"}>
+          {balance ? balance : <Skeleton>0</Skeleton>}
+        </StatNumber>
+        <StatHelpText color="whiteAlpha.600">{symbol}</StatHelpText>
+      </HStack>
+    </Stat>
+  );
+}
+
 function Balances() {
   const { data } = useTokenInfo();
 
@@ -160,17 +152,11 @@ function Balances() {
     <VStack align={"stretch"}>
       <Card bgColor={"red.800"}>
         <CardBody>
-          <Stat>
-            <StatLabel color={"whiteAlpha.500"}>OLD TOKEN</StatLabel>
-            <HStack align={"baseline"} gap={1}>
-              <StatNumber fontSize={"1.8rem"}>
-                {data ? data?.old.balanceOfUI : <Skeleton>0</Skeleton>}
-              </StatNumber>
-              <StatHelpText color="whiteAlpha.600">
-                {data?.old.symbol}
-              </StatHelpText>
-            </HStack>
-          </Stat>
+          <TokenAmount
+            title={"OLD TOKEN"}
+            balance={data?.old.balanceOfUI}
+            symbol={data?.old.symbol}
+          />
           <Tooltip label={data?.old.address}>
             <Text
               fontFamily={"monospace"}
@@ -194,17 +180,11 @@ function Balances() {
       </Card>
       <Card bgColor={"green.800"}>
         <CardBody>
-          <Stat>
-            <StatLabel color={"whiteAlpha.500"}>NEW TOKEN</StatLabel>
-            <HStack align={"baseline"} gap={1}>
-              <StatNumber fontSize={"1.8rem"}>
-                {data ? data?.new.balanceOfUI : <Skeleton>0</Skeleton>}
-              </StatNumber>
-              <StatHelpText color="whiteAlpha.600">
-                {data?.new.symbol}
-              </StatHelpText>
-            </HStack>
-          </Stat>
+          <TokenAmount
+            title={"NEW TOKEN"}
+            balance={data?.new.balanceOfUI}
+            symbol={data?.new.symbol}
+          />
           <Tooltip label={data?.new.address}>
             <Text
               fontFamily={"monospace"}
@@ -287,6 +267,7 @@ function App() {
             <Migrate />
           </VStack>
         )}
+        {isConnected && <AdminPanel />}
       </VStack>
     </Box>
   );
