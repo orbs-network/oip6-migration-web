@@ -1,4 +1,8 @@
-import { useContractWrite, usePrepareContractWrite } from "wagmi";
+import {
+  useContractWrite,
+  usePrepareContractWrite,
+  useWaitForTransaction,
+} from "wagmi";
 import React from "react";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,13 +22,18 @@ export function useTransaction(txn: any) {
     error: errorTxn,
     isLoading,
     isSuccess,
+    data,
   } = useContractWrite(_config);
+
+  const { error: errorTXN, isLoading: loadingTXN } = useWaitForTransaction({
+    hash: data?.hash,
+  });
 
   return {
     write,
     errorTxn,
-    errorPrepare,
-    isLoading: isLoading || isPrepareLoading,
+    errorPrepare: errorPrepare ?? errorTXN,
+    isLoading: isLoading || isPrepareLoading || loadingTXN,
     isSuccess,
   };
 }

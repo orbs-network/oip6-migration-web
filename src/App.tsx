@@ -170,7 +170,7 @@ function EditAmountPopup() {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [amount, setAmount] = useAtom(amountToMigrateAtom);
-  const [value, setValue] = useState(amount ?? "1");
+  const [value, setValue] = useState(amount ?? "");
   const initialRef = React.useRef(null);
   const { data } = useTokenInfo();
   const { network } = useConnectionStatus();
@@ -185,6 +185,8 @@ function EditAmountPopup() {
       setValue(data?.old.balanceOfUI);
     }
   }, [data?.old.balanceOfUI, amount, setAmount]);
+
+  const isInvalid = new BN(value).gt(data?.old.balanceOfUI ?? "0");
 
   return (
     <>
@@ -203,7 +205,7 @@ function EditAmountPopup() {
                   onChange={(e) => setValue(e.target.value)}
                   ref={initialRef}
                   value={value}
-                  max={data?.old.balanceOfUI}
+                  isInvalid={isInvalid}
                 />
                 <InputRightElement>
                   <Button
@@ -221,6 +223,7 @@ function EditAmountPopup() {
 
           <ModalFooter>
             <Button
+              isDisabled={isInvalid}
               onClick={() => {
                 setAmount(value);
                 onClose();
