@@ -18,6 +18,7 @@ import { fromUI } from "../lib/utils/fromUI";
 import { useAdminResetApproval } from "../hooks/useAdminResetApproval";
 import { useTransactionUI } from "../hooks/useTransactionUI";
 import { TransactionButton } from "./TransactionButton";
+import { useAdminTransferOwnership } from "../hooks/useAdminTransferOwnership";
 
 function ResetApproval() {
   const { data: tokenInfo, refetch } = useTokenInfo();
@@ -32,6 +33,28 @@ function ResetApproval() {
       Reset approval (Current:{" "}
       {toUI(tokenInfo?.old.allowance, tokenInfo.old.decimals)})
     </TransactionButton>
+  );
+}
+
+function TransferOwnership() {
+  const { data: tokenInfo, refetch } = useTokenInfo();
+  const [value, setValue] = React.useState("");
+  const result = useAdminTransferOwnership(value, refetch);
+  useTransactionUI(result);
+
+  if (!tokenInfo) return null;
+
+  return (
+    <HStack align={"end"}>
+      <VStack>
+        <Text color={"whiteAlpha.500"}>
+          Transfer ownership of migration contract
+        </Text>
+        <Text></Text>
+        <Input onChange={(e) => setValue(e.target.value)} value={value} />
+      </VStack>
+      <TransactionButton result={result}>Transfer Ownership</TransactionButton>
+    </HStack>
   );
 }
 
@@ -117,12 +140,14 @@ export function AdminPanel() {
           balance={tokenInfo?.new.balanceMigrationContractUI}
           symbol={tokenInfo?.new.symbol}
         />
+        <Spacer h={2} />
+        <ResetApproval />
         <Spacer h={6} />
         <TransferToMigrationContract />
         <Spacer h={2} />
         <TransferFromMigrationContract />
         <Spacer h={2} />
-        <ResetApproval />
+        <TransferOwnership />
       </CardBody>
     </Card>
   );
