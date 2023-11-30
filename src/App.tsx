@@ -1,8 +1,7 @@
 import "./App.css";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
-import { useAccount, useNetwork } from "wagmi";
-import { useMigrate } from "./lib/useMigrate";
-import { useAuthorize } from "./lib/useAuthorize";
+import { useMigrate } from "./hooks/useMigrate";
+import { useAuthorize } from "./hooks/useAuthorize";
 import {
   Alert,
   AlertIcon,
@@ -38,112 +37,67 @@ import {
 } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
 import BN from "bignumber.js";
-import { chainsById } from "./lib/config";
-import { CheckCircleIcon, WarningIcon } from "@chakra-ui/icons";
-import { useTokenInfo } from "./lib/useTokenInfo";
+import { CheckCircleIcon } from "@chakra-ui/icons";
+import { useTokenInfo } from "./hooks/useTokenInfo";
 import { AdminPanel } from "./components/AdminPanel";
-import { useErrorToast } from "./hooks/useErrorToast";
-import { useSuccessToast } from "./hooks/useSuccessToast";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import React from "react";
 import { fromUI } from "./lib/utils/fromUI";
-
-export const amountToMigrateAtom = atom<string | null>(null);
+import { useConnectionStatus } from "./hooks/useConnectionStatus";
+import { TransactionButton } from "./components/TransactionButton";
+import { useTransactionUI } from "./hooks/useTransactionUI";
+import { amountToMigrateAtom } from "./lib/amountToMigrateAtom";
 
 function AddressWidget() {
   return <w3m-account-button />;
 }
 
 function Migrate() {
-  const { data: tokenInfo } = useTokenInfo();
-  const {
-    write: migrate,
-    errorPrepare,
-    errorTxn,
-    isLoading,
-    isSuccess,
-  } = useMigrate();
-  useErrorToast(errorTxn);
-  useSuccessToast(isSuccess);
+  const [amount] = useAtom(amountToMigrateAtom);
+  const { data: tokenInfo, refetch } = useTokenInfo();
+  const result = useMigrate(refetch);
+  useTransactionUI(result);
 
-  let bgColor;
-  if (errorPrepare) {
-    bgColor = "red.500";
-  } else if (!tokenInfo?.old.isApproved) {
-    bgColor = "gray.500";
-  } else {
-    bgColor = "blue.500";
-  }
+  const isDisabled = !tokenInfo?.old.isApproved;
 
   return (
-    <Tooltip label={errorPrepare?.message}>
-      <Button
-        isLoading={isLoading}
-        bgColor={bgColor}
-        sx={{
-          py: 6,
-        }}
-        isDisabled={!migrate || !tokenInfo?.old.isApproved}
-        leftIcon={errorPrepare ? <WarningIcon /> : undefined}
-        onClick={() => {
-          migrate?.();
-        }}
-      >
-        Migrate to New ORBS
-      </Button>
-    </Tooltip>
+    <TransactionButton result={result} isDisabled={isDisabled}>
+      Migrate {amount} ORBS
+    </TransactionButton>
   );
 }
 
 function Authorize() {
-  const {
-    write: authorize,
-    errorPrepare,
-    errorTxn,
-    isLoading,
-    isSuccess,
-  } = useAuthorize();
-  const { data: tokenInfo } = useTokenInfo();
-  useErrorToast(errorTxn);
-  useSuccessToast(isSuccess);
   const [amount] = useAtom(amountToMigrateAtom);
-
-  let bgColor;
-
-  if (errorPrepare) {
-    bgColor = "red.500";
-  } else if (tokenInfo?.old.isApproved) {
-    bgColor = "gray.500";
-  } else {
-    bgColor = "blue.500";
-  }
+  const { data: tokenInfo, refetch } = useTokenInfo();
+  const result = useAuthorize(refetch);
+  useTransactionUI(result);
 
   const oldBalance = new BN(
     fromUI(amount ?? "0", tokenInfo?.old.decimals ?? 1)
   );
 
+  const isDisabled = !!tokenInfo?.old.isApproved || oldBalance.isZero();
+
   return (
-    <Tooltip
-      label={
-        oldBalance.isZero() ? "No tokens to migrate" : errorPrepare?.message
-      }
-    >
-      <Button
-        isLoading={isLoading}
-        isDisabled={
-          !authorize || !!tokenInfo?.old.isApproved || oldBalance.isZero()
-        }
-        sx={{ py: 6 }}
-        bgColor={bgColor}
+    <VStack align={"stretch"}>
+      {!isDisabled && (
+        <Alert status="info" color={"whiteAlpha.800"}>
+          <AlertIcon />
+          By authorizing, you allow the migration contract to transfer
+          {" " + amount} old ORBS tokens from your wallet and swap to new ORBS
+        </Alert>
+      )}
+      <TransactionButton
+        isDisabled={isDisabled}
         leftIcon={tokenInfo?.old.isApproved ? <CheckCircleIcon /> : undefined}
-        onClick={() => {
-          authorize?.();
-        }}
+        tooltip={oldBalance.isZero() ? "No tokens to migrate" : undefined}
+        result={result}
       >
         Authorize Migration Contract
-      </Button>
-    </Tooltip>
+      </TransactionButton>
+    </VStack>
   );
 }
 
@@ -190,7 +144,9 @@ function EditAmountPopup() {
 
   return (
     <>
-      <Button onClick={onOpen}>SET AMOUNT</Button>
+      <Button size={"sm"} onClick={onOpen}>
+        SET AMOUNT
+      </Button>
       <Modal initialFocusRef={initialRef} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -254,7 +210,8 @@ function Balances() {
             balance={amount ?? ""}
             symbol={data?.old.symbol}
           />
-
+          <EditAmountPopup />
+          <Spacer h={2} />
           <Tooltip label={data?.old.address}>
             <Text
               fontFamily={"monospace"}
@@ -274,8 +231,6 @@ function Balances() {
               </Alert>
             </>
           )}
-          <Spacer h={4} />
-          <EditAmountPopup />
         </CardBody>
       </Card>
       <Card bgColor={"green.800"}>
@@ -301,7 +256,7 @@ function Balances() {
   );
 }
 
-function ChooseNetwork() {
+function Connect() {
   const { open } = useWeb3Modal();
 
   return (
@@ -309,7 +264,7 @@ function ChooseNetwork() {
       <Text>To start, connect your wallet.</Text>
       <Button
         onClick={() => {
-          open({ view: "Networks" });
+          open({ view: "Connect" });
         }}
         size={"lg"}
         css={{
@@ -324,18 +279,28 @@ function ChooseNetwork() {
   );
 }
 
-export function useConnectionStatus() {
-  const { isConnected: _isConnected, address } = useAccount();
-  const network = useNetwork();
-  const isConnected =
-    _isConnected &&
-    Object.keys(chainsById).includes(`${network.chain?.id ?? 0}`);
-
-  return {
-    isConnected,
-    address,
-    network: isConnected ? chainsById[network.chain!.id] : undefined,
-  };
+function MigrateProcess() {
+  return (
+    <VStack align={"stretch"}>
+      <Card>
+        <CardBody>
+          <Text
+            sx={{ mb: 3 }}
+            textColor={"whiteAlpha.500"}
+            fontSize={"sm"}
+            fontWeight={"medium"}
+            textTransform={"uppercase"}
+          >
+            Migration Process
+          </Text>
+          <VStack align={"stretch"}>
+            <Authorize />
+            <Migrate />
+          </VStack>
+        </CardBody>
+      </Card>
+    </VStack>
+  );
 }
 
 function App() {
@@ -368,15 +333,10 @@ function App() {
           </CardBody>
         </Card>
         <Spacer h={4} />
-        {!isConnected && <ChooseNetwork />}
+        {!isConnected && <Connect />}
         {isConnected && <Balances />}
         <Spacer h={4} />
-        {isConnected && (
-          <VStack align={"stretch"}>
-            <Authorize />
-            <Migrate />
-          </VStack>
-        )}
+        {isConnected && <MigrateProcess />}
         {isConnected && <AdminPanel />}
       </VStack>
     </Box>

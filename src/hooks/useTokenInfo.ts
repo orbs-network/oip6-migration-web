@@ -4,13 +4,13 @@ import {
   newTokens,
   oldTokens,
   web3Providers,
-} from "./config";
+} from "../lib/config";
 import { useAccount, useNetwork } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { amountToMigrateAtom } from "../App";
+import { amountToMigrateAtom } from "../lib/amountToMigrateAtom";
 import BN from "bignumber.js";
-import { fromUI } from "./utils/fromUI";
+import { fromUI } from "../lib/utils/fromUI";
 
 export function useTokenInfo() {
   const network = useNetwork();

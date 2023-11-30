@@ -1,13 +1,13 @@
 import { erc20ABI } from "wagmi";
 import { useTokenInfo } from "./useTokenInfo";
-import { useConfig } from "./config";
+import { useConfig } from "../lib/config";
 import { useTransaction } from "./useTransaction";
 import { useAtom } from "jotai";
 import { useDebounce } from "usehooks-ts";
-import { amountToMigrateAtom } from "../App";
-import { fromUI } from "./utils/fromUI";
+import { amountToMigrateAtom } from "../lib/amountToMigrateAtom";
+import { fromUI } from "../lib/utils/fromUI";
 
-export function useAuthorize() {
+export function useAuthorize(onSuccess?: () => void) {
   const config = useConfig();
   const { data: tokenInfo } = useTokenInfo();
   const [amount] = useAtom(amountToMigrateAtom);
@@ -22,5 +22,6 @@ export function useAuthorize() {
     functionName: "approve",
     args: [config!.migrationContract, BigInt(debouncedAmount)],
     enabled: !!config && !!tokenInfo,
+    onSuccess,
   });
 }

@@ -1,13 +1,13 @@
-import oip6migration from "./oip6migration.abi.json";
+import oip6migration from "../lib/oip6migration.abi.json";
 import { useTokenInfo } from "./useTokenInfo";
-import { useConfig } from "./config";
+import { useConfig } from "../lib/config";
 import { useTransaction } from "./useTransaction";
 import { useDebounce } from "usehooks-ts";
 import { useAtom } from "jotai";
-import { amountToMigrateAtom } from "../App";
-import { fromUI } from "./utils/fromUI";
+import { amountToMigrateAtom } from "../lib/amountToMigrateAtom";
+import { fromUI } from "../lib/utils/fromUI";
 
-export function useMigrate() {
+export function useMigrate(onSuccess?: () => void) {
   const config = useConfig();
   const { data: tokenInfo } = useTokenInfo();
   const [amount] = useAtom(amountToMigrateAtom);
@@ -22,5 +22,6 @@ export function useMigrate() {
     functionName: "swap",
     args: [debouncedAmount],
     enabled: !!debouncedAmount && !!config && !!tokenInfo?.old.isApproved,
+    onSuccess,
   });
 }

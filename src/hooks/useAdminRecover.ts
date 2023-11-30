@@ -1,13 +1,13 @@
 import BN from "bignumber.js";
-import { useConfig } from "./config";
+import { useConfig } from "../lib/config";
 import { useTransaction } from "./useTransaction";
 import { useDebounce } from "usehooks-ts";
-import migrationAbi from "./oip6migration.abi.json";
-import { useConnectionStatus } from "../App";
+import migrationAbi from "../lib/oip6migration.abi.json";
+import { useConnectionStatus } from "./useConnectionStatus";
 
 export type BNComparable = number | string | BN;
 
-export function useAdminRecover(amount: BNComparable) {
+export function useAdminRecover(amount: BNComparable, onSuccess?: () => void) {
   const config = useConfig();
   const { address } = useConnectionStatus();
 
@@ -19,5 +19,6 @@ export function useAdminRecover(amount: BNComparable) {
     functionName: "sendTokens",
     args: [config?.newToken, address, debouncedAmount],
     enabled: !!debouncedAmount && !!config && !!address,
+    onSuccess,
   });
 }

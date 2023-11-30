@@ -1,80 +1,51 @@
 import {
-  Button,
   Card,
   CardBody,
   HStack,
   Input,
   Spacer,
-  Tooltip,
   VStack,
 } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
-import { useTokenInfo } from "../lib/useTokenInfo";
+import { useTokenInfo } from "../hooks/useTokenInfo";
 import { toUI } from "../lib/utils/toUI";
-import { useConnectionStatus, TokenAmount } from "../App";
-import { useErrorToast } from "../hooks/useErrorToast";
-import { useSuccessToast } from "../hooks/useSuccessToast";
-import { useAdminTransfer } from "../lib/useAdminTransfer";
-import { useAdminRecover } from "../lib/useAdminRecover";
+import { TokenAmount } from "../App";
+import { useConnectionStatus } from "../hooks/useConnectionStatus";
+import { useAdminTransfer } from "../hooks/useAdminTransfer";
+import { useAdminRecover } from "../hooks/useAdminRecover";
 import React from "react";
 import { fromUI } from "../lib/utils/fromUI";
-import { useAdminResetApproval } from "../lib/useAdminResetApproval";
+import { useAdminResetApproval } from "../hooks/useAdminResetApproval";
+import { useTransactionUI } from "../hooks/useTransactionUI";
+import { TransactionButton } from "./TransactionButton";
 
 function ResetApproval() {
-  const { data: tokenInfo } = useTokenInfo();
+  const { data: tokenInfo, refetch } = useTokenInfo();
 
-  const {
-    write: resetApproval,
-    errorPrepare,
-    errorTxn,
-    isLoading,
-    isSuccess,
-  } = useAdminResetApproval();
-
-  useErrorToast(errorTxn);
-  useSuccessToast(isSuccess);
+  const result = useAdminResetApproval(refetch);
+  useTransactionUI(result);
 
   if (!tokenInfo) return null;
 
   return (
-    <HStack>
-      <VStack>
-        <Text color={"whiteAlpha.500"}>
-          Reset approval (current:{" "}
-          {toUI(tokenInfo?.old.allowance, tokenInfo.old.decimals)})
-        </Text>
-      </VStack>
-      <Tooltip label={errorPrepare?.message}>
-        <Button
-          onClick={() => {
-            resetApproval?.();
-          }}
-          isLoading={isLoading}
-          isDisabled={!resetApproval}
-        >
-          Reset
-        </Button>
-      </Tooltip>
-    </HStack>
+    <TransactionButton result={result}>
+      Reset approval (Current:{" "}
+      {toUI(tokenInfo?.old.allowance, tokenInfo.old.decimals)})
+    </TransactionButton>
   );
 }
 
 function TransferFromMigrationContract() {
-  const { data: tokenInfo } = useTokenInfo();
+  const { data: tokenInfo, refetch } = useTokenInfo();
   const [value, setValue] = React.useState(
     tokenInfo?.new.balanceMigrationContractUI ?? "0"
   );
 
-  const {
-    write: recover,
-    errorPrepare,
-    errorTxn,
-    isLoading,
-    isSuccess,
-  } = useAdminRecover(fromUI(value, tokenInfo?.new.decimals ?? 0));
-
-  useErrorToast(errorTxn);
-  useSuccessToast(isSuccess);
+  const result = useAdminRecover(
+    fromUI(value, tokenInfo?.new.decimals ?? 0),
+    refetch
+  );
+  useTransactionUI(result);
 
   if (!tokenInfo) return null;
 
@@ -87,35 +58,20 @@ function TransferFromMigrationContract() {
         <Text></Text>
         <Input onChange={(e) => setValue(e.target.value)} value={value} />
       </VStack>
-      <Tooltip label={errorPrepare?.message}>
-        <Button
-          onClick={() => {
-            recover?.();
-          }}
-          isLoading={isLoading}
-          isDisabled={!recover}
-        >
-          Recover
-        </Button>
-      </Tooltip>
+      <TransactionButton result={result}>Recover</TransactionButton>
     </HStack>
   );
 }
 
 function TransferToMigrationContract() {
-  const { data: tokenInfo } = useTokenInfo();
+  const { data: tokenInfo, refetch } = useTokenInfo();
   const [value, setValue] = React.useState(tokenInfo?.new.balanceOfUI ?? "0");
 
-  const {
-    write: transfer,
-    errorPrepare,
-    errorTxn,
-    isLoading,
-    isSuccess,
-  } = useAdminTransfer(fromUI(value, tokenInfo?.new.decimals ?? 0));
-
-  useErrorToast(errorTxn);
-  useSuccessToast(isSuccess);
+  const result = useAdminTransfer(
+    fromUI(value, tokenInfo?.new.decimals ?? 0),
+    refetch
+  );
+  useTransactionUI(result);
 
   if (!tokenInfo) return null;
 
@@ -126,17 +82,7 @@ function TransferToMigrationContract() {
         <Text></Text>
         <Input value={value} onChange={(e) => setValue(e.target.value)} />
       </VStack>
-      <Tooltip label={errorPrepare?.message ?? ""}>
-        <Button
-          onClick={() => {
-            transfer?.();
-          }}
-          isLoading={isLoading}
-          isDisabled={!transfer}
-        >
-          Transfer
-        </Button>
-      </Tooltip>
+      <TransactionButton result={result}>Transfer</TransactionButton>
     </HStack>
   );
 }
