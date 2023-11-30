@@ -125,6 +125,15 @@ export function AdminPanel() {
   return (
     <Card w="100%">
       <CardBody>
+        <Text
+          sx={{ mb: 3 }}
+          textColor={"whiteAlpha.500"}
+          fontSize={"sm"}
+          fontWeight={"medium"}
+          textTransform={"uppercase"}
+        >
+          ADMIN
+        </Text>
         <Text>
           You are the owner of the migration contract. You can use this panel to
           perform administrative actions.

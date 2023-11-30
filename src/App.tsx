@@ -62,7 +62,11 @@ function Migrate() {
   const isDisabled = !tokenInfo?.old.isApproved;
 
   return (
-    <TransactionButton result={result} isDisabled={isDisabled}>
+    <TransactionButton
+      bgColor={"green.500"}
+      result={result}
+      isDisabled={isDisabled}
+    >
       Migrate {amount} ORBS
     </TransactionButton>
   );
@@ -202,57 +206,69 @@ function Balances() {
   const [amount] = useAtom(amountToMigrateAtom);
 
   return (
-    <VStack align={"stretch"}>
-      <Card bgColor={"red.800"}>
-        <CardBody>
-          <TokenAmount
-            title={"OLD TOKEN"}
-            balance={amount ?? ""}
-            symbol={data?.old.symbol}
-          />
-          <EditAmountPopup />
-          <Spacer h={2} />
-          <Tooltip label={data?.old.address}>
-            <Text
-              fontFamily={"monospace"}
-              noOfLines={1}
-              color="whiteAlpha.700"
-              fontSize={"0.9rem"}
-            >
-              {data?.old.address}
-            </Text>
-          </Tooltip>
-          {data?.old.balanceOf === "0" && (
-            <>
-              <Spacer h={2} />
-              <Alert status="error">
-                <AlertIcon />
-                <AlertTitle>No tokens to migrate</AlertTitle>
-              </Alert>
-            </>
-          )}
-        </CardBody>
-      </Card>
-      <Card bgColor={"green.800"}>
-        <CardBody>
-          <TokenAmount
-            title={"NEW TOKEN"}
-            balance={data?.new.balanceOfUI}
-            symbol={data?.new.symbol}
-          />
-          <Tooltip label={data?.new.address}>
-            <Text
-              fontFamily={"monospace"}
-              noOfLines={1}
-              color="whiteAlpha.700"
-              fontSize={"0.9rem"}
-            >
-              {data?.new.address}
-            </Text>
-          </Tooltip>
-        </CardBody>
-      </Card>
-    </VStack>
+    <Card>
+      <CardBody>
+        <Text
+          sx={{ mb: 3 }}
+          textColor={"whiteAlpha.500"}
+          fontSize={"sm"}
+          fontWeight={"medium"}
+          textTransform={"uppercase"}
+        >
+          Balances
+        </Text>
+        <Card bgColor={"red.800"}>
+          <CardBody>
+            <TokenAmount
+              title={"OLD TOKEN"}
+              balance={amount ?? ""}
+              symbol={data?.old.symbol}
+            />
+            <EditAmountPopup />
+            <Spacer h={2} />
+            <Tooltip label={data?.old.address}>
+              <Text
+                fontFamily={"monospace"}
+                noOfLines={1}
+                color="whiteAlpha.700"
+                fontSize={"0.9rem"}
+              >
+                {data?.old.address}
+              </Text>
+            </Tooltip>
+            {data?.old.balanceOf === "0" && (
+              <>
+                <Spacer h={2} />
+                <Alert status="error">
+                  <AlertIcon />
+                  <AlertTitle>No tokens to migrate</AlertTitle>
+                </Alert>
+              </>
+            )}
+          </CardBody>
+        </Card>
+        <Spacer h={4} />
+        <Card bgColor={"green.800"}>
+          <CardBody>
+            <TokenAmount
+              title={"NEW TOKEN"}
+              balance={data?.new.balanceOfUI}
+              symbol={data?.new.symbol}
+            />
+            <Tooltip label={data?.new.address}>
+              <Text
+                fontFamily={"monospace"}
+                noOfLines={1}
+                color="whiteAlpha.700"
+                fontSize={"0.9rem"}
+              >
+                {data?.new.address}
+              </Text>
+            </Tooltip>
+          </CardBody>
+        </Card>
+      </CardBody>
+    </Card>
   );
 }
 
@@ -337,6 +353,7 @@ function App() {
         {isConnected && <Balances />}
         <Spacer h={4} />
         {isConnected && <MigrateProcess />}
+        <Spacer h={4} />
         {isConnected && <AdminPanel />}
       </VStack>
     </Box>

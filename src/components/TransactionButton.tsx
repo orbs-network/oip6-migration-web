@@ -15,7 +15,7 @@ export function TransactionButton(
   } else if (isDisabled) {
     bgColor = "gray.500";
   } else {
-    bgColor = "blue.500";
+    bgColor = params.bgColor ?? "blue.500";
   }
 
   return (
