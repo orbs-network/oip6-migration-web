@@ -69,7 +69,7 @@ function Migrate() {
       result={result}
       isDisabled={isDisabled}
     >
-      Migrate {amount} ORBS
+      Exchange {amount} ORBS
     </TransactionButton>
   );
 }
@@ -359,8 +359,8 @@ function App() {
         <Card w="100%">
           <CardBody>
             <Text>
-              This tool lets you safely migrate defunct multichain ORBS to the
-              new ORBS token, as decided in{" "}
+              This tool enables you to exchange superseded ORBS tokens that were bridged on Multichain for current ORBS tokens bridged through Axelar,
+              as decided in{" "}
               <Link
                 isExternal
                 color="blue.400"
