@@ -7,7 +7,6 @@ import {
 import { Text } from "@chakra-ui/react";
 import { useTokenInfo } from "../hooks/useTokenInfo";
 import { useAtom } from "jotai";
-import React from "react";
 import { amountToMigrateAtom } from "../lib/amountToMigrateAtom";
 import { TokenAmount } from "./TokenAmount";
 import { EditAmountPopup } from "./EditAmountPopup";

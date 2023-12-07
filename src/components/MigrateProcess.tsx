@@ -3,7 +3,6 @@ import {
   CardBody, VStack
 } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
-import React from "react";
 import { useConfig } from "../lib/config";
 import { Address } from "./Address";
 import { Authorize } from "./Authorize";

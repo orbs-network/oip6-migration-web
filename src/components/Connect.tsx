@@ -1,7 +1,6 @@
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { Button } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
-import React from "react";
 import { useConnectionStatus } from "../hooks/useConnectionStatus";
 
 export function Connect() {

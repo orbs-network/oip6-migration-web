@@ -1,6 +1,5 @@
 import { Link, Tooltip } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
-import React from "react";
 import { useNetwork } from "wagmi";
 
 

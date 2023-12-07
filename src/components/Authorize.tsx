@@ -7,7 +7,6 @@ import BN from "bignumber.js";
 import { CheckCircleIcon } from "@chakra-ui/icons";
 import { useTokenInfo } from "../hooks/useTokenInfo";
 import { useAtom } from "jotai";
-import React from "react";
 import { fromUI } from "../lib/utils/fromUI";
 import { TransactionButton } from "./TransactionButton";
 import { useTransactionUI } from "../hooks/useTransactionUI";

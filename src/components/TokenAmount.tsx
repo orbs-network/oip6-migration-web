@@ -1,11 +1,11 @@
 import {
-  HStack, Skeleton, Stat,
+  HStack,
+  Skeleton,
+  Stat,
   StatHelpText,
   StatLabel,
-  StatNumber
+  StatNumber,
 } from "@chakra-ui/react";
-import React from "react";
-
 
 export function TokenAmount(params: {
   title: string;

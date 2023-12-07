@@ -1,7 +1,6 @@
 import { useMigrate } from "../hooks/useMigrate";
 import { useTokenInfo } from "../hooks/useTokenInfo";
 import { useAtom } from "jotai";
-import React from "react";
 import { TransactionButton } from "./TransactionButton";
 import { useTransactionUI } from "../hooks/useTransactionUI";
 import { amountToMigrateAtom } from "../lib/amountToMigrateAtom";
