@@ -14,7 +14,6 @@ import {
   FormLabel,
   HStack,
   Heading,
-  Icon,
   Input,
   InputGroup,
   InputRightElement,
