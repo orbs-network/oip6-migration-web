@@ -48,6 +48,8 @@ import { useConnectionStatus } from "./hooks/useConnectionStatus";
 import { TransactionButton } from "./components/TransactionButton";
 import { useTransactionUI } from "./hooks/useTransactionUI";
 import { amountToMigrateAtom } from "./lib/amountToMigrateAtom";
+import { useNetwork } from "wagmi";
+import { useConfig } from "./lib/config";
 
 function AddressWidget() {
   return <w3m-account-button />;
@@ -201,6 +203,40 @@ function EditAmountPopup() {
   );
 }
 
+function Address({ address }: { address: string }) {
+  const network = useNetwork();
+
+  let addressToExplorer;
+  switch (network.chain?.id) {
+    case 43114:
+      addressToExplorer = `https://avascan.info/blockchain/c/address/${address}`;
+      break;
+    case 250:
+      addressToExplorer = `https://ftmscan.com/address/${address}`;
+      break;
+    case 56:
+      addressToExplorer = `https://bscscan.com/address/${address}`;
+      break;
+    default:
+      addressToExplorer = "";
+  }
+
+  return (
+    <Tooltip label={address}>
+      <Link isExternal href={addressToExplorer}>
+        <Text
+          fontFamily={"monospace"}
+          noOfLines={1}
+          color="whiteAlpha.700"
+          fontSize={"0.9rem"}
+        >
+          {address}
+        </Text>
+      </Link>
+    </Tooltip>
+  );
+}
+
 function Balances() {
   const { data } = useTokenInfo();
   const [amount] = useAtom(amountToMigrateAtom);
@@ -226,16 +262,7 @@ function Balances() {
             />
             <EditAmountPopup />
             <Spacer h={2} />
-            <Tooltip label={data?.old.address}>
-              <Text
-                fontFamily={"monospace"}
-                noOfLines={1}
-                color="whiteAlpha.700"
-                fontSize={"0.9rem"}
-              >
-                {data?.old.address}
-              </Text>
-            </Tooltip>
+            <Address address={data?.old.address ?? ""} />
             {data?.old.balanceOf === "0" && (
               <>
                 <Spacer h={2} />
@@ -255,16 +282,7 @@ function Balances() {
               balance={data?.new.balanceOfUI}
               symbol={data?.new.symbol}
             />
-            <Tooltip label={data?.new.address}>
-              <Text
-                fontFamily={"monospace"}
-                noOfLines={1}
-                color="whiteAlpha.700"
-                fontSize={"0.9rem"}
-              >
-                {data?.new.address}
-              </Text>
-            </Tooltip>
+            <Address address={data?.new.address ?? ""} />
           </CardBody>
         </Card>
       </CardBody>
@@ -274,13 +292,14 @@ function Balances() {
 
 function Connect() {
   const { open } = useWeb3Modal();
+  const { address } = useConnectionStatus();
 
   return (
     <>
       <Text>To start, connect your wallet.</Text>
       <Button
         onClick={() => {
-          open({ view: "Connect" });
+          open({ view: address ? "Networks" : "Connect" });
         }}
         size={"lg"}
         css={{
@@ -289,13 +308,14 @@ function Connect() {
         }}
         colorScheme={"blue"}
       >
-        Connect Wallet
+        {address ? "Switch Network" : "Connect Wallet"}
       </Button>
     </>
   );
 }
 
 function MigrateProcess() {
+  const config = useConfig();
   return (
     <VStack align={"stretch"}>
       <Card>
@@ -312,6 +332,12 @@ function MigrateProcess() {
           <VStack align={"stretch"}>
             <Authorize />
             <Migrate />
+            <Card>
+              <CardBody bgColor={"whiteAlpha.100"}>
+                <Text color="whiteAlpha.500">Migration Contract</Text>
+                <Address address={config?.migrationContract ?? ""} />
+              </CardBody>
+            </Card>
           </VStack>
         </CardBody>
       </Card>

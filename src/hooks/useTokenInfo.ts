@@ -20,6 +20,7 @@ export function useTokenInfo() {
   return useQuery({
     queryKey: ["tokenInfo", network.chain?.name, account.address, amount],
     enabled: !!network.chain?.id && !!account.address,
+    refetchInterval: 3000,
     queryFn: async () => {
       const _network = chainsById[network.chain!.id];
       const web3Provider = web3Providers[_network];

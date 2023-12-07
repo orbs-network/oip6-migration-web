@@ -5,7 +5,6 @@ import {
 } from "wagmi";
 import React, { useEffect } from "react";
 
-
 export type TXNOpts = {
   address?: `0x${string}`;
   abi: any;
@@ -58,6 +57,8 @@ export function useTransaction(txn: TXNOpts): UseTransactionResult {
     hash: data?.hash,
     confirmations: 2,
   });
+
+  console.log(errorTXN);
 
   useEffect(() => {
     isSuccessTXN && txn.onSuccess?.();

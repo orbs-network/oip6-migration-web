@@ -7,7 +7,11 @@ import { useConnectionStatus } from "./useConnectionStatus";
 
 export type BNComparable = number | string | BN;
 
-export function useAdminRecover(amount: BNComparable, onSuccess?: () => void) {
+export function useAdminRecover(
+  amount: BNComparable,
+  type: "old" | "new",
+  onSuccess?: () => void
+) {
   const config = useConfig();
   const { address } = useConnectionStatus();
 
@@ -17,7 +21,11 @@ export function useAdminRecover(amount: BNComparable, onSuccess?: () => void) {
     address: config?.migrationContract,
     abi: migrationAbi.abi,
     functionName: "sendTokens",
-    args: [config?.newToken, address, debouncedAmount],
+    args: [
+      type === "new" ? config?.newToken : config?.oldToken,
+      address,
+      debouncedAmount,
+    ],
     enabled: !!debouncedAmount && !!config && !!address,
     onSuccess,
   });

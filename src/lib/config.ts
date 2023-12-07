@@ -10,6 +10,12 @@ export const chainsById: Record<number, AvailableNetworks> = {
   56: "BSC",
 };
 
+export const chainIdsByName = {
+  AVA: 43114,
+  FTM: 250,
+  BSC: 56,
+};
+
 export const rpcs = {
   // AVA: `https://rpc.walletconnect.com/v1?chainId=eip155:43114&projectId=${projectId}`,
   AVA: import.meta.env.VITE_ALCHEMY_RPC_AVA,

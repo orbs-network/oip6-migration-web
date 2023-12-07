@@ -3,6 +3,7 @@ import {
   CardBody,
   HStack,
   Input,
+  Select,
   Spacer,
   VStack,
 } from "@chakra-ui/react";
@@ -13,7 +14,7 @@ import { TokenAmount } from "../App";
 import { useConnectionStatus } from "../hooks/useConnectionStatus";
 import { useAdminTransfer } from "../hooks/useAdminTransfer";
 import { useAdminRecover } from "../hooks/useAdminRecover";
-import React from "react";
+import React, { useEffect } from "react";
 import { fromUI } from "../lib/utils/fromUI";
 import { useAdminResetApproval } from "../hooks/useAdminResetApproval";
 import { useTransactionUI } from "../hooks/useTransactionUI";
@@ -64,8 +65,24 @@ function TransferFromMigrationContract() {
     tokenInfo?.new.balanceMigrationContractUI ?? "0"
   );
 
+  const [tokenType, setTokenType] = React.useState<"new" | "old">("new");
+
+  useEffect(() => {
+    setValue(
+      tokenType === "new"
+        ? tokenInfo?.new.balanceMigrationContractUI ?? "0"
+        : tokenInfo?.old.balanceMigrationContractUI ?? "0"
+    );
+  }, [tokenType, tokenInfo]);
+
   const result = useAdminRecover(
-    fromUI(value, tokenInfo?.new.decimals ?? 0),
+    fromUI(
+      value,
+      tokenType === "new"
+        ? tokenInfo?.new.decimals ?? 0
+        : tokenInfo?.old.decimals ?? 0
+    ),
+    tokenType,
     refetch
   );
   useTransactionUI(result);
@@ -76,9 +93,17 @@ function TransferFromMigrationContract() {
     <HStack align={"end"}>
       <VStack>
         <Text color={"whiteAlpha.500"}>
-          Recover NEW from migration contract to admin
+          Recover {tokenType.toUpperCase()} Orbs from migration contract to
+          admin
         </Text>
         <Text></Text>
+        <Select
+          onChange={(e) => setTokenType(e.target.value as "new" | "old")}
+          defaultValue={tokenType}
+        >
+          <option value="new">NEW</option>
+          <option value="old">OLD</option>
+        </Select>
         <Input onChange={(e) => setValue(e.target.value)} value={value} />
       </VStack>
       <TransactionButton result={result}>Recover</TransactionButton>
