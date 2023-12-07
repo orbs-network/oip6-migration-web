@@ -14,6 +14,7 @@ import {
   FormLabel,
   HStack,
   Heading,
+  Icon,
   Input,
   InputGroup,
   InputRightElement,
@@ -381,6 +382,16 @@ function App() {
         {isConnected && <MigrateProcess />}
         <Spacer h={4} />
         {isConnected && <AdminPanel />}
+        <Box as="footer" mt={10}>
+          <Link
+            href="https://github.com/orbs-network/oip6-migration-web"
+            isExternal
+          >
+            <HStack>
+              <Text>View on GitHub</Text>
+            </HStack>
+          </Link>
+        </Box>
       </VStack>
     </Box>
   );
