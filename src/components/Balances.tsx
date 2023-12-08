@@ -1,20 +1,18 @@
 import {
   Alert,
   AlertIcon,
-  AlertTitle, Card,
-  CardBody, Spacer
+  AlertTitle,
+  Card,
+  CardBody,
+  Spacer,
 } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
 import { useTokenInfo } from "../hooks/useTokenInfo";
-import { useAtom } from "jotai";
-import { amountToMigrateAtom } from "../lib/amountToMigrateAtom";
 import { TokenAmount } from "./TokenAmount";
-import { EditAmountPopup } from "./EditAmountPopup";
 import { Address } from "./Address";
 
 export function Balances() {
   const { data } = useTokenInfo();
-  const [amount] = useAtom(amountToMigrateAtom);
 
   return (
     <Card>
@@ -32,9 +30,9 @@ export function Balances() {
           <CardBody>
             <TokenAmount
               title={"OLD TOKEN"}
-              balance={amount ?? ""}
-              symbol={data?.old.symbol} />
-            <EditAmountPopup />
+              balance={data?.old.balanceOfUI ?? ""}
+              symbol={data?.old.symbol}
+            />
             <Spacer h={2} />
             <Address address={data?.old.address ?? ""} />
             {data?.old.balanceOf === "0" && (
@@ -54,7 +52,8 @@ export function Balances() {
             <TokenAmount
               title={"NEW TOKEN"}
               balance={data?.new.balanceOfUI}
-              symbol={data?.new.symbol} />
+              symbol={data?.new.symbol}
+            />
             <Address address={data?.new.address ?? ""} />
           </CardBody>
         </Card>

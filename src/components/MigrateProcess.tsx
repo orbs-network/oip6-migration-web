@@ -1,12 +1,10 @@
-import {
-  Card,
-  CardBody, VStack
-} from "@chakra-ui/react";
+import { Card, CardBody, VStack } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
 import { useConfig } from "../lib/config";
 import { Address } from "./Address";
 import { Authorize } from "./Authorize";
 import { Migrate } from "./Migrate";
+import { EditAmountPopup } from "./EditAmountPopup";
 
 export function MigrateProcess() {
   const config = useConfig();
@@ -26,9 +24,10 @@ export function MigrateProcess() {
           <VStack align={"stretch"}>
             <Authorize />
             <Migrate />
+            <EditAmountPopup />
             <Card>
               <CardBody bgColor={"whiteAlpha.100"}>
-                <Text color="whiteAlpha.500">Migration Contract</Text>
+                <Text>Migration Contract</Text>
                 <Address address={config?.migrationContract ?? ""} />
               </CardBody>
             </Card>

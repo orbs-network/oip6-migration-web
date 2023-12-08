@@ -1,14 +1,18 @@
 import {
-  Button, FormControl,
-  FormLabel, Input,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
   InputGroup,
-  InputRightElement, Modal,
+  InputRightElement,
+  Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  ModalOverlay, useDisclosure
+  ModalOverlay,
+  useDisclosure,
 } from "@chakra-ui/react";
 import BN from "bignumber.js";
 import { useTokenInfo } from "../hooks/useTokenInfo";
@@ -42,9 +46,7 @@ export function EditAmountPopup() {
 
   return (
     <>
-      <Button size={"sm"} onClick={onOpen}>
-        SET AMOUNT
-      </Button>
+      <Button size={"sm"} variant={"outline"} onClick={onOpen}>Change Amount</Button>
       <Modal initialFocusRef={initialRef} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -59,7 +61,8 @@ export function EditAmountPopup() {
                   onChange={(e) => setValue(e.target.value)}
                   ref={initialRef}
                   value={value}
-                  isInvalid={isInvalid} />
+                  isInvalid={isInvalid}
+                />
                 <InputRightElement>
                   <Button
                     onClick={() => {

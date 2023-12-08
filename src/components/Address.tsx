@@ -2,8 +2,7 @@ import { Link, Tooltip } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
 import { useNetwork } from "wagmi";
 
-
-export function Address({ address }: { address: string; }) {
+export function Address({ address }: { address: string }) {
   const network = useNetwork();
 
   let addressToExplorer;

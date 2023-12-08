@@ -22,6 +22,7 @@ function App() {
 
   return (
     <Box>
+      
       <VStack spacing={4} align={"stretch"}>
         {isConnected && <AddressWidget />}
         <HStack>

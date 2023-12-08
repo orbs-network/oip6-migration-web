@@ -5,7 +5,6 @@ import { TransactionButton } from "./TransactionButton";
 import { useTransactionUI } from "../hooks/useTransactionUI";
 import { amountToMigrateAtom } from "../lib/amountToMigrateAtom";
 
-
 export function Migrate() {
   const [amount] = useAtom(amountToMigrateAtom);
   const { data: tokenInfo, refetch } = useTokenInfo();
@@ -19,6 +18,7 @@ export function Migrate() {
       bgColor={"green.500"}
       result={result}
       isDisabled={isDisabled}
+      sx={{ width: "100%" }}
     >
       Exchange {amount} ORBS
     </TransactionButton>
